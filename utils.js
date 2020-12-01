@@ -27,10 +27,7 @@ export class Request{
 }
 
 export class Response{
-  constructor(fn){
-    if(typeof fn != 'function'){
-      throw new Error(`Invalid response callback. Expecting 'function'`);
-    }
-    this.send = fn;
+  constructor(callbacks){
+    Object.assign(this, callbacks);
   }
 }

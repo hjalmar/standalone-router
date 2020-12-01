@@ -47,7 +47,8 @@ Request{
 ```js
 // response object
 Response{
-  send : Function
+  send : Function,
+  error: Function
 }
 ```
 
@@ -108,6 +109,24 @@ app.catch('/admin/:page', adminCallbackFunction);
 app.catch('/:section/:page', sectionCallbackFunction);
 // lastly catch everything else
 app.catch(errorCallbackFunction);
+```
+
+### Triggering error
+The reponse object exposes an error `Function` that wil trigger an error for that route. The function takes an optonal argument of properties that will be exposed in the catch callback.
+```js
+app.get('/:slug', (req, res) => {
+  // here you have access to the params from the request object
+  if(conditions != true){
+    return res.error({ custom: 'props' });
+  }
+  res.send('GeneralComponent', { ...req.params });
+});
+
+// catch all errors
+app.catch((req, res, props) => {
+  // handle the error
+  res.send('ErrorComponent', props);
+})
 ```
 
 ## Middlewares 

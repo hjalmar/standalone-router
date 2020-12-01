@@ -105,16 +105,20 @@ class Router{
     if(!this.__subscribing){
       return;
     }
-    const response = new Response((...props) => this.__router_callback.call(null, ...props));
+    const response = new Response({
+      send: (...props) => this.__router_callback.call(null, ...props),
+      error: (props) => {
+        const errorsFound = this._findRoute(url, this.__catch, true);
+        if(!errorsFound){
+          console.warn(`No route or catch fallbacks found for [${url}]`);
+          return;
+        }
+        errorsFound.RouteInstance.callback.call(null, errorsFound.Request, response, props);
+      }
+    });
     let matchFound = this._findRoute(url, this.__get);
     if(!matchFound){
-      const errorsFound = this._findRoute(url, this.__catch, true);
-      if(!errorsFound){
-        console.warn(`No route or catch fallbacks found for [${url}]`);
-        return;
-      }
-      errorsFound.RouteInstance.callback.call(null, errorsFound.Request, response);
-      return;
+      response.error();
     }
     let middlewares = [];
     const middleware = new Middleware(matchFound.Request, response);
