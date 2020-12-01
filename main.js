@@ -119,6 +119,7 @@ class Router{
     let matchFound = this._findRoute(url, this.__get);
     if(!matchFound){
       response.error();
+      return;
     }
     let middlewares = [];
     const middleware = new Middleware(matchFound.Request, response);
