@@ -41,7 +41,8 @@ Request{
   base : String,
   path : String,
   route: String,
-  params : Object
+  params : Object,
+  state: Object
 }
 ```
 ```js
@@ -82,6 +83,8 @@ There is one more thing about routes. So far all routes has been explicit, meani
 app.get('/:slug/*', callbackFunction);
 ```
 
+
+
 For easier to manage sections one could also chain set of routes together. This will concatenate the main route with the current route. For instance `'/create'` will be stored as `'/admin/posts/create'` and so on.
 ```js
 app.get('/admin/posts', (req, res) => res.send('component', req.params))
@@ -112,7 +115,7 @@ app.catch(errorCallbackFunction);
 ```
 
 ### Triggering error
-The reponse object exposes an error `Function` that wil trigger an error for that route. The function takes an optonal argument of properties that will be exposed in the catch callback.
+The reponse object exposes an error `Function` that will trigger an error for that route. The function takes an optonal argument of properties that will be exposed in the catch callback.
 ```js
 app.get('/:slug', (req, res) => {
   // here you have access to the params from the request object
@@ -130,19 +133,17 @@ app.catch((req, res, props) => {
 ```
 
 ## Middlewares 
-There are two ways to apply middleware. Like routes you can use the 'use' method or you can add them directly to the route itself.
+There are two ways to apply middleware. Like routes but with the 'use' method or you can add them directly to the route itself.
 ```js
-// here we can handle all routes just like we do with the fallbacks
+// here we can handle all routes just like we do with the general fallback catcher
 app.use((req, res, next) => {
   // for each route lets simply logg the url to the console
   console.log(req.path);
-  // to be able to continue on with the next middleware 
-  // we have to call next
+  // to be able to continue on with the next middleware we have to call next
   next();
 });
 ```
-and secondly attach it to the route itself. Note that even if the middleware defined with the use directive is defined after the route it would still be processed before 
-the ones defined on the route.
+and secondly attach it to the route itself. Note that even if the middleware defined with the use directive is defined after the route it would still be processed before the ones defined on the route.
 ```js
 // verify the users authentication status
 const hasAuth = (req, res, next) => {
@@ -170,35 +171,47 @@ unsubscribe();
 
 ## Calling a new route 
 Calling a route is as simple as calling the execute function on the router along with 
-a string argument to the required path.
+a string argument to the required path. Execute also takes a second otional argument of custom data
+that will be injected in to the request object 
 ```js
 app.execute('/about');
+// /about with state parameters
+app.execute('/about', { params: { custom: 'data' } });
 ```
 
 ## Implementation
 In a frontend application you most likely would utilize the browsers popstate event and dispatch said events.
 ```js
 // create custom functions to handle navigation ...
-export const navigate = (url, state, title) => {
-  history.pushState(state || {}, title || '', url); 
-  dispatchEvent(new Event('popstate'));
+export const navigate = (url, state = {}, title = '') => {
+  history.pushState(state, title, url); 
+  // use a custom event and detail to pass data to the request.state object
+  dispatchEvent(new CustomEvent('popstate', { detail: { params: { ...state } }}));
 }
 // ... and redirections
-export const redirect = (url, state, title) => {
-  history.replaceState(state || {}, title || '', url);
-  dispatchEvent(new Event('popstate'));
+export const redirect = (url, state = {}, title = '') => {
+  history.replaceState(state, title, url);
+  // use a custom event and detail to pass data to the request.state object
+  dispatchEvent(new CustomEvent('popstate', { detail: { params: { ...state } }}));
 }
 ```
 
 Then listen for the popstate event on the window object and from there execute the current url to find the matching route in the router.
 
 ```js
-// implementation using the browsers popstate event
-window.addEventListener('popstate', e => app.execute(window.location.pathname));
+// implementation using the browsers popstate event. Use `e.detail` to access the detail data from the custom event
+window.addEventListener('popstate', e => app.execute(window.location.pathname, e.detail));
+```
+
+Passing state parameters.
+```js
+app.get('/:subpage', (req, res) => {
+  // access req.state object.
+  console.log(req.state);
+});
 ```
 
 ## Real world example
-
 ```js
 // import 
 import Router from 'standalone-router';
@@ -233,9 +246,10 @@ const unsubscribe = app.subscribe((component, props) => {
 });
 
 // create custom navigate function to handle navigation
-const navigate = (url, state, title) => {
-  history.pushState(state || {}, title || '', url); 
-  dispatchEvent(new Event('popstate'));
+const navigate = (url, state = {}, title = '') => {
+  history.pushState(state, title, url); 
+  // use a custom event and detail to pass data to the request.state object
+  dispatchEvent(new CustomEvent('popstate', { detail: { params: { ...state } }}));
 }
 
 // click handler on 'a' tags 
@@ -245,5 +259,5 @@ const clickHandler = (e) => {
 });
 
 // listening to the browser popstate event
-window.addEventListener('popstate', e => app.execute(window.location.pathname));
+window.addEventListener('popstate', e => app.execute(window.location.pathname, e.detail));
 ```
