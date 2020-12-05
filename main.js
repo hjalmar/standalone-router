@@ -99,7 +99,7 @@ class Router{
       }
     }
   }
-  execute(url, data){
+  execute(url, data = {}){
     if(typeof url != 'string'){
       throw new Error(`Invalid 'execute' argument. Expecting 'string'`);
     }
