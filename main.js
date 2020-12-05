@@ -69,7 +69,7 @@ class Router{
   catch(...args){
     return this._storeInList('catch', this.__catch, ...args);
   }
-  _findRoute(url, list){
+  _findRoute(url, list, data){
     for(let [ regexpRoute, RouteInstance ] of list){
       const parameters = url.match(new RegExp(regexpRoute, 'i'));
       if(parameters){
@@ -91,14 +91,15 @@ class Router{
             path: url,
             route: '/' + RouteInstance.route,
             base: RouteInstance.base,
-            params: params
+            params: params,
+            state: { ...data },
           })
         };
         return returnObject;
       }
     }
   }
-  execute(url){
+  execute(url, data){
     if(typeof url != 'string'){
       throw new Error(`Invalid 'execute' argument. Expecting 'string'`);
     }
@@ -108,7 +109,7 @@ class Router{
     const response = new Response({
       send: (...props) => this.__router_callback.call(null, ...props),
       error: (props) => {
-        const errorsFound = this._findRoute(url, this.__catch, true);
+        const errorsFound = this._findRoute(url, this.__catch, data);
         if(!errorsFound){
           console.warn(`No route or catch fallbacks found for [${url}]`);
           return;
@@ -116,7 +117,7 @@ class Router{
         errorsFound.RouteInstance.callback.call(null, errorsFound.Request, response, props);
       }
     });
-    let matchFound = this._findRoute(url, this.__get);
+    let matchFound = this._findRoute(url, this.__get, data);
     if(!matchFound){
       response.error();
       return;
