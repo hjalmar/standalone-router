@@ -8,6 +8,7 @@ class Router{
     Object.freeze(this.__properties = {
       initial: undefined,
       base: '',
+      state: {},
       ...props
     });
     // are we subscribing?
@@ -141,7 +142,7 @@ class Router{
       this.__router_callback = fn;
     }
     if(this.__properties.initial){
-      this.execute(this.__properties.initial);
+      this.execute(this.__properties.initial, this.__properties.state);
     }
     return () => {
       this.__subscribing = false;

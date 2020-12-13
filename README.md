@@ -22,6 +22,8 @@ npm i standalone-router
 const options = {
   // initial: '/about'
   initial: window.location.pathname,
+  // pass along a state data with the initial request
+  state: { customState: 'on initial load' },
   // prefix all routes with this base
   base: '' // <- default. can be omitted
   // for electron applications where on windows all routes is prefix under 
