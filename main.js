@@ -84,7 +84,20 @@ class Router{
             return obj;
           }, params);
         }
-
+        // query parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryParameters = {};
+        for(const [key, value] of urlParams.entries()){ 
+          if(queryParameters[key]){
+            if(Array.isArray(queryParameters[key])){
+              queryParameters[key].push(value);
+            }else{
+              queryParameters[key] = [queryParameters[key], value];
+            }
+          }else{
+            queryParameters[key] = value;
+          }
+        }
         // update request object
         const returnObject = { 
           RouteInstance,
@@ -92,6 +105,7 @@ class Router{
             path: url,
             route: '/' + RouteInstance.route,
             base: RouteInstance.base,
+            query: queryParameters,
             params: params,
             state: { ...data },
           })

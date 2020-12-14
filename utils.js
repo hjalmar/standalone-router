@@ -21,6 +21,7 @@ export class Request{
       base: '',
       path: '',
       route: '',
+      query: {},
       params: {},
       state: {}
     }, props);
