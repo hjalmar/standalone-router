@@ -44,6 +44,7 @@ Request{
   path : String,
   route: String,
   params : Object,
+  query : Object,
   state: Object
 }
 ```
@@ -178,7 +179,7 @@ that will be injected in to the request object
 ```js
 app.execute('/about');
 // /about with state parameters
-app.execute('/about', { params: { custom: 'data' } });
+app.execute('/about', { custom: 'data' } );
 ```
 
 ## Implementation
@@ -188,13 +189,13 @@ In a frontend application you most likely would utilize the browsers popstate ev
 export const navigate = (url, state = {}, title = '') => {
   history.pushState(state, title, url); 
   // use a custom event and detail to pass data to the request.state object
-  dispatchEvent(new CustomEvent('popstate', { detail: { params: { ...state } }}));
+  dispatchEvent(new CustomEvent('popstate', { detail: { ...state } }));
 }
 // ... and redirections
 export const redirect = (url, state = {}, title = '') => {
   history.replaceState(state, title, url);
   // use a custom event and detail to pass data to the request.state object
-  dispatchEvent(new CustomEvent('popstate', { detail: { params: { ...state } }}));
+  dispatchEvent(new CustomEvent('popstate', { detail: { ...state } }));
 }
 ```
 
@@ -251,7 +252,7 @@ const unsubscribe = app.subscribe((component, props) => {
 const navigate = (url, state = {}, title = '') => {
   history.pushState(state, title, url); 
   // use a custom event and detail to pass data to the request.state object
-  dispatchEvent(new CustomEvent('popstate', { detail: { params: { ...state } }}));
+  dispatchEvent(new CustomEvent('popstate', { detail: { ...state } }));
 }
 
 // click handler on 'a' tags 
